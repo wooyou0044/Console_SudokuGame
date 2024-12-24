@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SudokuGame
 {
-    class SudokuBoard
+    internal class SudokuBoardPractice
     {
         int[,] _sudokuArr;
 
@@ -127,7 +127,7 @@ namespace SudokuGame
                 // 다음 줄 검사하기 위해 증가
                 examineLine++;
 
-                if (startIndex >= 5)
+                if(startIndex >= 5)
                 {
                     isFilled = true;
                     exceptNum.Clear();
@@ -151,6 +151,155 @@ namespace SudokuGame
                 startIndex++;
                 exceptNum.Clear();
             }
+
+
+            //=========================================================
+            examineLine = 0;
+            startIndex = centerIndex;
+
+            for (int i = 0; i < includeNum.Count; i++)
+            {
+                // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+                if (i < 3)
+                {
+                    if (!exceptNum.Contains(includeNum[i]))
+                    {
+                        exceptNum.Add(includeNum[i]);
+                    }
+                }
+                // 3x3의 2번째줄 채울때 실행
+                if (examineLine == 1)
+                {
+                    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+                    if (i >= 6 && i < 9)
+                    {
+                        mustHaveNum.Add(includeNum[i]);
+                    }
+                }
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[startIndex, i]);
+            }
+
+            exceptNum.Clear();
+
+            examineLine++;
+
+            for (int i = 0; i < includeNum.Count; i++)
+            {
+                // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+                if (i >=3 && i<6)
+                {
+                    if (!exceptNum.Contains(includeNum[i]))
+                    {
+                        exceptNum.Add(includeNum[i]);
+                    }
+                }
+                // 3x3의 2번째줄 채울때 실행
+                if (examineLine == 1)
+                {
+                    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+                    if (i >= 6 && i < 9)
+                    {
+                        mustHaveNum.Add(includeNum[i]);
+                    }
+                }
+            }
+
+            if (examineLine == 1)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    // 중복이 들어갈 수 있어서 중복 처리
+                    if (!exceptNum.Contains(_sudokuArr[startIndex, i]))
+                    {
+                        exceptNum.Add(_sudokuArr[startIndex, i]);
+                    }
+                    if (mustHaveNum.Contains(_sudokuArr[startIndex, i]))
+                    {
+                        mustHaveNum.Remove(_sudokuArr[startIndex, i]);
+                    }
+                }
+            }
+
+            startIndex++;
+
+
+            for (int i = 0; i < 3; i++)
+            {
+                _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[startIndex, i]);
+            }
+
+            examineLine++;
+
+            if (examineLine == 2)
+            {
+                // startIndex = 4;
+                // 마지막 열 exceptNum 하기 위한 조건
+                for (int i = 3; i < 6; i++)
+                {
+                    if (exceptNum.Contains(_sudokuArr[startIndex, i]))
+                    {
+                        exceptNum.Remove(_sudokuArr[startIndex, i]);
+                    }
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    if (!exceptNum.Contains(_sudokuArr[startIndex - 1, i]))
+                    {
+                        exceptNum.Add(_sudokuArr[startIndex - 1, i]);
+                    }
+                }
+            }
+
+            startIndex++;
+
+
+            for (int i = 0; i < 3; i++)
+            {
+                _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[startIndex, i]);
+            }
+
+            exceptNum.Clear();
+
+            startIndex = centerIndex;
+
+            // 다른 것도 적용하려면 일단 다른걸로 생각
+            while (startIndex <= 5)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    exceptNum.Add(_sudokuArr[startIndex, i]);
+                }
+                for (int i = 6; i < 9; i++)
+                {
+                    _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                    exceptNum.Add(_sudokuArr[startIndex, i]);
+                }
+                startIndex++;
+                exceptNum.Clear();
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             // 잘 나왔는지 임의로 출력

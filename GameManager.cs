@@ -13,6 +13,9 @@ namespace SudokuGame
         SudokuBoard _board;
         int _levelSellNum;
 
+        //임시로 만든 스도쿠 보드
+        SudokuBoardPractice _practice;
+
         public int LevelSellNum
         {
             get
@@ -28,13 +31,16 @@ namespace SudokuGame
         public GameManager()
         {
             _board = new SudokuBoard();
+
+            _practice = new SudokuBoardPractice();
         }
 
         public void Play()
         {
             // 스도쿠 보드 만들기 위해서 임의로 생성
             //LevelChoose();
-            _board.GenerateSudoku();
+            //_board.GenerateSudoku();
+            _practice.GenerateSudoku();
         }
 
         void LevelChoose()
