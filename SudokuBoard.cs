@@ -44,6 +44,7 @@ namespace SudokuGame
 
             List<int> exceptNum = new List<int>();
             List<int> includeNum = new List<int>();
+            List<int> mustHaveNum = new List<int>();
 
             // 중간 3X3을 기준으로 함
             // 얘를 기준으로 다음 3X3을 만들 때는 기준이 된 숫자들 제외하고 랜덤으로 나오게 하기
@@ -51,7 +52,7 @@ namespace SudokuGame
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    _sudokuArr[i + 3, j + 3] = rand.RandWithoutDuplicat(1, 9, exceptNum);
+                    _sudokuArr[i + 3, j + 3] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
                     // 넣은 숫자 List에 추가
                     includeNum.Add(_sudokuArr[i + 3, j + 3]);
                 }
@@ -67,34 +68,19 @@ namespace SudokuGame
                 }
             }
 
-            for (int i = 0; i < exceptNum.Count; i++)
-            {
-                Console.Write(exceptNum[i] + "\t");
-            }
-            Console.WriteLine();
-
             for (int i = 0; i < 3; i++)
             {
-                _sudokuArr[i, 3] = rand.RandWithoutDuplicat(1, 9, exceptNum);
-                // 중복이 들어갈 수 있어서 중복 처리
-                //if (!exceptNum.Contains(_sudokuArr[i, 3]))
-                //{
-                //    exceptNum.Add(_sudokuArr[i, 3]);
-                //}
-            }
-
-            exceptNum.Clear();
-
-            for(int i=0; i<3; i++)
-            {
+                _sudokuArr[i, 3] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
                 exceptNum.Add(_sudokuArr[i, 3]);
             }
 
-            for (int i = 0; i < exceptNum.Count; i++)
+            for (int i = 6; i < 9; i++)
             {
-                Console.Write(exceptNum[i] + "\t");
+                _sudokuArr[i, 3] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[i, 3]);
             }
-            Console.WriteLine();
+
+            exceptNum.Clear();
 
             for (int i = 0; i < includeNum.Count; i++)
             {
@@ -105,16 +91,82 @@ namespace SudokuGame
                         exceptNum.Add(includeNum[i]);
                     }
                 }
+                if (i % 3 == 2)
+                {
+                    mustHaveNum.Add(includeNum[i]);
+                }
             }
 
             for (int i = 0; i < 3; i++)
             {
-                _sudokuArr[i, 4] = rand.RandWithoutDuplicat(1, 9, exceptNum);
+                // 중복이 들어갈 수 있어서 중복 처리
+                if (!exceptNum.Contains(_sudokuArr[i, 3]))
+                {
+                    exceptNum.Add(_sudokuArr[i, 3]);
+                }
+                if (mustHaveNum.Contains(_sudokuArr[i,3]))
+                {
+                    mustHaveNum.Remove(_sudokuArr[i, 3]);
+                }
             }
 
-            // 행과 열마다 중복되는 숫자 없게
-            // 3 x 3안의 숫자들은 중복되지 않게 만들었기 때문에
+            for (int i = 0; i < 3; i++)
+            {
+                _sudokuArr[i, 4] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[i, 4]);
+            }
 
+            exceptNum.Clear();
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 3; j < 5; j++)
+                {
+                    exceptNum.Add(_sudokuArr[i, j]);
+                }
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                _sudokuArr[i, 5] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[i, 5]);
+            }
+
+            exceptNum.Clear();
+
+            for(int i=0; i<6; i++)
+            {
+                exceptNum.Add(_sudokuArr[i, 4]);
+            }
+
+            for(int i=6; i<9; i++)
+            {
+                _sudokuArr[i, 4] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[i, 4]);
+            }
+
+            exceptNum.Clear();
+
+            for(int i=6; i<9; i++)
+            {
+                for(int j=3; j<5; j++)
+                {
+                    exceptNum.Add(_sudokuArr[i, j]);
+                }
+            }
+
+            for(int i=0; i<mustHaveNum.Count; i++)
+            {
+                Console.WriteLine(mustHaveNum[i]);
+            }
+
+            for (int i = 6; i < 9; i++)
+            {
+                _sudokuArr[i, 5] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[i, 5]);
+            }
+
+            exceptNum.Clear();
 
             // 잘 나왔는지 임의로 출력
             for (int i = 0; i < _sudokuArr.GetLength(0); i++)
@@ -126,7 +178,7 @@ namespace SudokuGame
                 Console.WriteLine();
             }
 
-            for (int i = 0; i < exceptNum.Count; i++)
+            for(int i=0; i<exceptNum.Count; i++)
             {
                 Console.Write(exceptNum[i] + "\t");
             }
