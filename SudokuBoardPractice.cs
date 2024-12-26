@@ -13,278 +13,602 @@ namespace SudokuGame
             _sudokuArr = new int[9, 9];
             Random rand = new Random();
 
-            // 3x3칸에 중복되는 숫자 없게 만들때 만들어진 행의 개수
-            int lineCount = 0;
-            // 3x3칸에 중복되는 숫자 없게 만들때 만들어진 열의 개수
-            int rowCount = 0;
-            bool isFilled = false;
-
-            // 제외할 숫자를 검사하는 변수 선언
-            int examineLine = 0;
-            int centerIndex = (int)Math.Sqrt(_sudokuArr.GetLength(0));
-            int startIndex = 0;
-
             List<int> exceptNum = new List<int>();
-            List<int> includeNum = new List<int>();
             List<int> mustHaveNum = new List<int>();
 
+            List<int> includeNum = new List<int>();
+            List<int> tempNumList = new List<int>();
 
-            startIndex = centerIndex;
 
-            // 중간 3X3을 기준으로 함
-            // 얘를 기준으로 다음 3X3을 만들 때는 기준이 된 숫자들 제외하고 랜덤으로 나오게 하기
-            for (int i = 0; i < 3; i++)
+            int centerIndex = (int)Math.Sqrt(_sudokuArr.GetLength(0));
+            // 박스 안에 들어갈 최대 숫자
+            int maxNum = _sudokuArr.GetLength(0);
+
+            // 채우지 않은 나머지 부분
+            int restColumnNum = 0;
+            int restRowNum = 0;
+            int start = 0;
+
+            // 시작할 인덱스 숫자 변수
+            int startIndex = 0;
+            // 만들어진 박스 개수
+            int boxNum = 0;
+            // 만들어진 라인 개수 변수
+            int makeLineNum = 0;
+            // 검사해야 하는 줄 개수
+            int examineLine = 0;
+            // 랜덤으로 나올 숫자에서 제외해야할 includeNum 인덱스
+            int exceptIndex = 0;
+            int nextExamineLine = 0;
+
+            int changeRow = 0;
+            int changeColumn = 0;
+
+            int xIndex = 0;
+            int yIndex = 0;
+
+            int mustHaveIndex = 0;
+
+            // 세로 줄이 남아있는지 확인
+            bool isVerticalLeft = false;
+
+            //// 열, 세로줄
+            int columnIndex = rand.Next(0, maxNum);
+            // 행, 가로줄
+            int rowIndex = rand.Next(0, maxNum);
+
+            while (columnIndex % centerIndex != 0 || rowIndex % centerIndex != 0)
             {
-                for (int j = 0; j < 3; j++)
+                columnIndex = rand.Next(0, _sudokuArr.GetLength(0));
+                rowIndex = rand.Next(0, _sudokuArr.GetLength(1));
+            }
+            
+            // 랜덤한 위치의 3X3에 중복되지 않은 랜덤한 숫자 생성
+            for (int i = 0; i < centerIndex; i++)
+            {
+                for (int j = 0; j < centerIndex; j++)
                 {
-                    _sudokuArr[i + startIndex, j + startIndex] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                    // 넣은 숫자 List에 추가
-                    includeNum.Add(_sudokuArr[i + startIndex, j + startIndex]);
+                    _sudokuArr[i + columnIndex, j + rowIndex] = rand.RandWithoutDuplicat(1, maxNum, exceptNum, ref mustHaveNum);
+                    includeNum.Add(_sudokuArr[i + columnIndex, j + rowIndex]);
                 }
             }
+            // 박스 하나 만들어졌으므로
+            boxNum++;
 
-            // ==================================
-            // 일단 (0,3) ~ (2,5)까지만
+            isVerticalLeft = true; 
 
-            while (!isFilled)
+            changeColumn = columnIndex;
+            changeRow = rowIndex;
+
+            //===========반복 될 아이
+            //while(boxNum < maxNum)
+            while (boxNum < 5)
             {
-                // 제외할 숫자 List에 추가
-                for (int i = 0; i < includeNum.Count; i++)
+                // 박스가 하나 만들어지면 실행
+                if (makeLineNum % centerIndex== 0)
                 {
-                    if (i % 3 == examineLine)
+                    // 3x3이 하나 만들어지면 반복될 아이
+                    restColumnNum = 0;
+                    restRowNum = 0;
+
+                    for (int i = 0; i < _sudokuArr.GetLength(0); i++)
                     {
-                        if (!exceptNum.Contains(includeNum[i]))
+                        // 만들어진 3X3의 남은 세로 줄 개수
+                        if (_sudokuArr[i, rowIndex + 2] == 0)
                         {
-                            exceptNum.Add(includeNum[i]);
+                            restColumnNum++;
+                        }
+                        // 만들어진 3X3의 남은 가로 줄 개수
+                        if (_sudokuArr[columnIndex + 2, i] == 0)
+                        {
+                            restRowNum++;
                         }
                     }
-                    // 3x3의 2번째줄 채울때 실행
-                    if (examineLine == 1)
+
+                    if (restColumnNum == 0)
                     {
-                        if (i % 3 == examineLine + 1)
+                        isVerticalLeft = false;
+                    }
+                    else
+                    {
+                        isVerticalLeft = true;
+                    }
+
+
+                    if (isVerticalLeft)
+                    {
+                        if (changeColumn <= centerIndex)
                         {
-                            mustHaveNum.Add(includeNum[i]);
+                            changeColumn += centerIndex;
+                        }
+                        else
+                        {
+                            changeColumn -= centerIndex;
+                        }
+                    }
+
+                    else
+                    {
+                        if (changeRow <= centerIndex)
+                        {
+                            changeRow += centerIndex;
+                        }
+                        else
+                        {
+                            changeRow -= centerIndex;
+                        }
+                    }
+
+                    if (isVerticalLeft)
+                    {
+                        if (_sudokuArr[changeColumn, rowIndex] != 0)
+                        {
+                            if (changeColumn == 3 || changeColumn == centerIndex * 2)
+                            {
+                                changeColumn = 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (_sudokuArr[columnIndex, changeRow] != 0)
+                        {
+                            if (changeRow == 3 || changeRow == centerIndex * 2)
+                            {
+                                changeRow = 0;
+                            }
                         }
                     }
                 }
 
-                if (examineLine == 1)
+                // 얘는 3X3이 하나 만들어질때까지 반복
+                if (makeLineNum < centerIndex)
                 {
-                    for (int i = 0; i < 3; i++)
+                    if (!isVerticalLeft)
                     {
-                        // 중복이 들어갈 수 있어서 중복 처리
-                        if (!exceptNum.Contains(_sudokuArr[i, startIndex]))
-                        {
-                            exceptNum.Add(_sudokuArr[i, startIndex]);
-                        }
-                        if (mustHaveNum.Contains(_sudokuArr[i, startIndex]))
-                        {
-                            mustHaveNum.Remove(_sudokuArr[i, startIndex]);
-                        }
+                        startIndex = changeRow;
                     }
-                }
-
-                if (examineLine == 2)
-                {
-                    // startIndex = 4;
-                    // 마지막 열 exceptNum 하기 위한 조건
-                    for (int i = 3; i < 6; i++)
+                    else
                     {
-                        if (exceptNum.Contains(_sudokuArr[i, startIndex]))
-                        {
-                            exceptNum.Remove(_sudokuArr[i, startIndex]);
-                        }
+                        startIndex = changeColumn;
                     }
 
-                    for (int i = 0; i < 3; i++)
+
+                    // 검사해야 하는 줄 개수
+                    examineLine = 0;
+                    // 랜덤으로 나올 숫자에서 제외해야할 includeNum 인덱스
+                    exceptIndex = 0;
+                    nextExamineLine = 0;
+
+                    while (examineLine < 3)
                     {
-                        if (!exceptNum.Contains(_sudokuArr[i, startIndex - 1]))
+                        exceptIndex = isVerticalLeft ? (examineLine * centerIndex) + makeLineNum : (makeLineNum * centerIndex) + examineLine;
+                        nextExamineLine = isVerticalLeft ? 1 : centerIndex;
+
+                        if (!exceptNum.Contains(includeNum[exceptIndex]))
                         {
-                            exceptNum.Add(_sudokuArr[i, startIndex - 1]);
+                            exceptNum.Add(includeNum[exceptIndex]);
+                        }
+                        if (makeLineNum >= centerIndex - 2)
+                        {
+                            if (exceptNum.Contains(includeNum[exceptIndex - nextExamineLine]))
+                            {
+                                exceptNum.Remove(includeNum[exceptIndex - nextExamineLine]);
+                            }
+                            if (makeLineNum == centerIndex - 2)
+                            {
+                                mustHaveNum.Add(includeNum[exceptIndex + nextExamineLine]);
+                            }
+                        }
+                        examineLine++;
+                    }
+
+                    if (mustHaveNum.Count > 0)
+                    {
+                        for (int i = 0; i < centerIndex; i++)
+                        {
+                            xIndex = isVerticalLeft ? i + startIndex : columnIndex + makeLineNum - 1;
+                            yIndex = isVerticalLeft ? rowIndex + makeLineNum - 1 : i + startIndex;
+                            if (mustHaveNum.Contains(_sudokuArr[xIndex, yIndex]))
+                            {
+                                mustHaveNum.Remove(_sudokuArr[xIndex, yIndex]);
+                            }
                         }
                     }
-                }
 
+                    if (makeLineNum == centerIndex - 1)
+                    {
+                        for (int i = 0; i < centerIndex; i++)
+                        {
+                            xIndex = isVerticalLeft ? i + startIndex : columnIndex;
+                            yIndex = isVerticalLeft ? rowIndex : i + startIndex;
+                            if (!exceptNum.Contains(_sudokuArr[xIndex, yIndex]))
+                            {
+                                exceptNum.Add(_sudokuArr[xIndex, yIndex]);
+                            }
 
-                if (examineLine >= 1)
-                {
+                        }
+                    }
+
+                    for (int i = 0; i < centerIndex; i++)
+                    {
+                        xIndex = isVerticalLeft ? i + startIndex : columnIndex + makeLineNum;
+                        yIndex = isVerticalLeft ? rowIndex + makeLineNum : i + startIndex;
+                        _sudokuArr[xIndex, yIndex] = rand.RandWithoutDuplicat(1, maxNum, exceptNum, ref mustHaveNum);
+                        exceptNum.Add(_sudokuArr[xIndex, yIndex]);
+                    }
+
+                    makeLineNum++;
                     startIndex++;
                 }
 
-
-                for (int i = 0; i < 3; i++)
+                else
                 {
-                    _sudokuArr[i, startIndex] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                    exceptNum.Add(_sudokuArr[i, startIndex]);
-                }
-
-                if (examineLine == 0)
-                {
-                    // 마지막 열 하기 바로 전에는 하면 안 됨
-                    exceptNum.Clear();
-                }
-
-                // 다음 줄 검사하기 위해 증가
-                examineLine++;
-
-                if(startIndex >= 5)
-                {
-                    isFilled = true;
-                    exceptNum.Clear();
-                }
-            }
-
-            startIndex = centerIndex;
-
-            // 다른 것도 적용하려면 일단 다른걸로 생각
-            while (startIndex <= 5)
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    exceptNum.Add(_sudokuArr[i, startIndex]);
-                }
-                for (int i = 6; i < 9; i++)
-                {
-                    _sudokuArr[i, startIndex] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                    exceptNum.Add(_sudokuArr[i, startIndex]);
-                }
-                startIndex++;
-                exceptNum.Clear();
-            }
-
-
-            //=========================================================
-            examineLine = 0;
-            startIndex = centerIndex;
-
-            for (int i = 0; i < includeNum.Count; i++)
-            {
-                // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-                if (i < 3)
-                {
-                    if (!exceptNum.Contains(includeNum[i]))
+                    if (!isVerticalLeft)
                     {
-                        exceptNum.Add(includeNum[i]);
+                        startIndex = changeRow;
+                    }
+                    else
+                    {
+                        startIndex = changeColumn;
+                    }
+                    
+                    if (isVerticalLeft)
+                    {
+                        start = (columnIndex < startIndex) ? 0 : centerIndex;
+                    }
+                    else
+                    {
+                        start = (rowIndex < startIndex) ? 0 : centerIndex;
+                    }
+                    if (startIndex == 0 || startIndex == centerIndex * 2)
+                    {
+                        for (int i = start; i < centerIndex * 2 + start; i++)
+                        {
+                            xIndex = isVerticalLeft ? i : columnIndex + makeLineNum - 3;
+                            yIndex = isVerticalLeft ? rowIndex + makeLineNum - 3 : i;
+                            exceptNum.Add(_sudokuArr[xIndex, yIndex]);
+                        }
+                        for (int i = 0; i < centerIndex; i++)
+                        {
+                            xIndex = isVerticalLeft ? i + startIndex : columnIndex + makeLineNum - 3;
+                            yIndex = isVerticalLeft ? rowIndex + makeLineNum - 3 : i + startIndex;
+                            _sudokuArr[xIndex, yIndex] = rand.RandWithoutDuplicat(1, maxNum, exceptNum, ref mustHaveNum);
+                            exceptNum.Add(_sudokuArr[xIndex, yIndex]);
+                        }
+                        makeLineNum++;
+                        exceptNum.Clear();
                     }
                 }
-                // 3x3의 2번째줄 채울때 실행
-                if (examineLine == 1)
+
+                if (makeLineNum == centerIndex)
                 {
-                    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-                    if (i >= 6 && i < 9)
+                    boxNum++;
+                    exceptNum.Clear();
+                    mustHaveNum.Clear();
+                }
+
+                if (makeLineNum == centerIndex * 2)
+                {
+                    boxNum++;
+                    makeLineNum = 0;
+                    mustHaveNum.Clear();
+                }
+            }
+
+
+            // =========================================================================
+
+            if (columnIndex <= centerIndex)
+            {
+                columnIndex += centerIndex;
+            }
+            else
+            {
+                columnIndex -= centerIndex;
+            }
+
+            if (rowIndex <= centerIndex)
+            {
+                rowIndex += centerIndex;
+            }
+            else
+            {
+                rowIndex -= centerIndex;
+            }
+
+            changeRow = rowIndex;
+            changeColumn = columnIndex;
+
+            // 3x3이 하나 만들어지면 반복될 아이
+            restColumnNum = 0;
+            restRowNum = 0;
+
+            for (int i = 0; i < _sudokuArr.GetLength(0); i++)
+            {
+                // 만들어진 3X3의 남은 세로 줄 개수
+                if (_sudokuArr[i, rowIndex + 2] == 0)
+                {
+                    restColumnNum++;
+                }
+                // 만들어진 3X3의 남은 가로 줄 개수
+                if (_sudokuArr[columnIndex + 2, i] == 0)
+                {
+                    restRowNum++;
+                }
+            }
+
+            if (restColumnNum == 0)
+            {
+                isVerticalLeft = false;
+            }
+            else
+            {
+                isVerticalLeft = true;
+            }
+
+            Console.WriteLine("changeColumn : " + changeColumn);
+            Console.WriteLine("changeRow : " + changeRow);
+
+
+
+
+
+
+
+            includeNum.Clear();
+            if (changeColumn >= centerIndex)
+            {
+                // 내 위에 것이 채워져 있다면 위에 것을 includeNum List에 저장
+                if (_sudokuArr[changeColumn - 1, changeRow] != 0)
+                {
+                    for (int i = 0; i < centerIndex; i++)
+                    {
+                        for (int j = 0; j < centerIndex; j++)
+                        {
+                            includeNum.Add(_sudokuArr[(changeColumn - centerIndex) + i, changeRow + j]);
+                        }
+                    }
+                }
+                else if (_sudokuArr[changeColumn + centerIndex, changeRow] != 0)
+                {
+                    for (int i = 0; i < centerIndex; i++)
+                    {
+                        for (int j = 0; j < centerIndex; j++)
+                        {
+                            includeNum.Add(_sudokuArr[i + changeColumn + centerIndex, changeRow + j]);
+                        }
+                    }
+                }
+                if (_sudokuArr[changeColumn - 1, changeRow] == 0)
+                {
+
+                }
+                else if (_sudokuArr[changeColumn + centerIndex, changeRow] != 0)
+                {
+
+                }
+            }
+
+            else
+            {
+                for (int i = 0; i < centerIndex; i++)
+                {
+                    for (int j = 0; j < centerIndex; j++)
+                    {
+                        includeNum.Add(_sudokuArr[i + centerIndex, changeRow + j]);
+                    }
+                }
+            }
+
+
+
+            //얘는 3X3이 하나 만들어질때까지 반복
+            if (makeLineNum < centerIndex)
+            {
+                if (!isVerticalLeft)
+                {
+                    startIndex = changeRow;
+                }
+                else
+                {
+                    startIndex = changeColumn;
+                }
+
+
+                for (int i = 0; i < includeNum.Count; i++)
+                {
+                    if (i % 3 > 0)
                     {
                         mustHaveNum.Add(includeNum[i]);
                     }
                 }
-            }
 
-            for (int i = 0; i < 3; i++)
-            {
-                _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                exceptNum.Add(_sudokuArr[startIndex, i]);
-            }
-
-            exceptNum.Clear();
-
-            examineLine++;
-
-            for (int i = 0; i < includeNum.Count; i++)
-            {
-                // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-                if (i >=3 && i<6)
+                for (int i = 0; i < _sudokuArr.GetLength(0); i++)
                 {
-                    if (!exceptNum.Contains(includeNum[i]))
+                    if (_sudokuArr[changeColumn, i] != 0)
                     {
-                        exceptNum.Add(includeNum[i]);
-                    }
-                }
-                // 3x3의 2번째줄 채울때 실행
-                if (examineLine == 1)
-                {
-                    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-                    if (i >= 6 && i < 9)
-                    {
-                        mustHaveNum.Add(includeNum[i]);
-                    }
-                }
-            }
-
-            if (examineLine == 1)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    // 중복이 들어갈 수 있어서 중복 처리
-                    if (!exceptNum.Contains(_sudokuArr[startIndex, i]))
-                    {
-                        exceptNum.Add(_sudokuArr[startIndex, i]);
-                    }
-                    if (mustHaveNum.Contains(_sudokuArr[startIndex, i]))
-                    {
-                        mustHaveNum.Remove(_sudokuArr[startIndex, i]);
-                    }
-                }
-            }
-
-            startIndex++;
-
-
-            for (int i = 0; i < 3; i++)
-            {
-                _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                exceptNum.Add(_sudokuArr[startIndex, i]);
-            }
-
-            examineLine++;
-
-            if (examineLine == 2)
-            {
-                // startIndex = 4;
-                // 마지막 열 exceptNum 하기 위한 조건
-                for (int i = 3; i < 6; i++)
-                {
-                    if (exceptNum.Contains(_sudokuArr[startIndex, i]))
-                    {
-                        exceptNum.Remove(_sudokuArr[startIndex, i]);
+                        if (!exceptNum.Contains(_sudokuArr[changeColumn, i]))
+                        {
+                            exceptNum.Add(_sudokuArr[changeColumn, i]);
+                        }
                     }
                 }
 
-                for (int i = 0; i < 3; i++)
+                // 검사해야 하는 줄 개수
+                examineLine = 0;
+                // 랜덤으로 나올 숫자에서 제외해야할 includeNum 인덱스
+                exceptIndex = 0;
+                nextExamineLine = 0;
+
+                while (examineLine < 3)
                 {
-                    if (!exceptNum.Contains(_sudokuArr[startIndex - 1, i]))
+                    exceptIndex = isVerticalLeft ? (examineLine * centerIndex) + makeLineNum : (makeLineNum * centerIndex) + examineLine;
+                    nextExamineLine = isVerticalLeft ? 1 : centerIndex;
+
+                    if (!exceptNum.Contains(includeNum[exceptIndex]))
                     {
-                        exceptNum.Add(_sudokuArr[startIndex - 1, i]);
+                        exceptNum.Add(includeNum[exceptIndex]);
+                        tempNumList.Add(includeNum[exceptIndex]);
                     }
+                    examineLine++;
                 }
-            }
 
-            startIndex++;
+                _sudokuArr[changeColumn, changeRow] = rand.RandWithoutDuplicat(1, maxNum, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[changeColumn, changeRow]);
 
-
-            for (int i = 0; i < 3; i++)
-            {
-                _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                exceptNum.Add(_sudokuArr[startIndex, i]);
-            }
-
-            exceptNum.Clear();
-
-            startIndex = centerIndex;
-
-            // 다른 것도 적용하려면 일단 다른걸로 생각
-            while (startIndex <= 5)
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    exceptNum.Add(_sudokuArr[startIndex, i]);
-                }
-                for (int i = 6; i < 9; i++)
-                {
-                    _sudokuArr[startIndex, i] = rand.RandWithoutDuplicat(1, 9, exceptNum, ref mustHaveNum);
-                    exceptNum.Add(_sudokuArr[startIndex, i]);
-                }
-                startIndex++;
                 exceptNum.Clear();
+
+                changeColumn++;
+
+                for (int i = 0; i < tempNumList.Count; i++)
+                {
+                    exceptNum.Add(tempNumList[i]);
+                }
+
+                for (int i = 0; i < _sudokuArr.GetLength(0); i++)
+                {
+                    if (_sudokuArr[changeColumn, i] != 0)
+                    {
+                        if (!exceptNum.Contains(_sudokuArr[changeColumn, i]))
+                        {
+                            exceptNum.Add(_sudokuArr[changeColumn, i]);
+                        }
+                    }
+                }
+
+
+
+                // 검사해야 하는 줄 개수
+                examineLine = 0;
+                // 랜덤으로 나올 숫자에서 제외해야할 includeNum 인덱스
+                exceptIndex = 0;
+                nextExamineLine = 0;
+
+
+                while (examineLine < 3)
+                {
+                    exceptIndex = isVerticalLeft ? (examineLine * centerIndex) + makeLineNum : (makeLineNum * centerIndex) + examineLine;
+                    nextExamineLine = isVerticalLeft ? 1 : centerIndex;
+
+                    if (!exceptNum.Contains(includeNum[exceptIndex]))
+                    {
+                        exceptNum.Add(includeNum[exceptIndex]);
+                    }
+                    examineLine++;
+                }
+
+                for (int i = 0; i < _sudokuArr.GetLength(0); i++)
+                {
+                    if (_sudokuArr[changeColumn, i] != 0)
+                    {
+                        if (!exceptNum.Contains(_sudokuArr[changeColumn, i]))
+                        {
+                            exceptNum.Add(_sudokuArr[changeColumn, i]);
+                        }
+                    }
+                }
+
+                _sudokuArr[changeColumn, changeRow] = rand.RandWithoutDuplicat(1, maxNum, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[changeColumn, changeRow]);
+
+
+                // 제외해야 하는 숫자 List에 제거
+                for (int i = 0; i < _sudokuArr.GetLength(0); i++)
+                {
+                    if (exceptNum.Contains(_sudokuArr[changeColumn, i]))
+                    {
+                        exceptNum.Remove(_sudokuArr[changeColumn, i]);
+                    }
+                }
+
+                // 다음 줄 exceptNum에 다시 추가
+                changeColumn++;
+
+                for (int i = 0; i < _sudokuArr.GetLength(0); i++)
+                {
+                    if (_sudokuArr[changeColumn, i] != 0)
+                    {
+                        if (!exceptNum.Contains(_sudokuArr[changeColumn, i]))
+                        {
+                            exceptNum.Add(_sudokuArr[changeColumn, i]);
+                        }
+                    }
+                }
+
+                examineLine = 0;
+                while (examineLine < 3)
+                {
+                    exceptIndex = isVerticalLeft ? (examineLine * centerIndex) + makeLineNum : (makeLineNum * centerIndex) + examineLine;
+                    nextExamineLine = isVerticalLeft ? 1 : centerIndex;
+
+                    if (!exceptNum.Contains(includeNum[exceptIndex]))
+                    {
+                        exceptNum.Add(includeNum[exceptIndex]);
+                    }
+                    examineLine++;
+                }
+
+                // 들어가야 하는 숫자 추가
+                for (int i = 0; i < _sudokuArr.GetLength(0); i++)
+                {
+                    if (_sudokuArr[changeColumn + 1, i] != 0)
+                    {
+                        if (!mustHaveNum.Contains(_sudokuArr[changeColumn + 1, i]))
+                        {
+                            mustHaveNum.Add(_sudokuArr[changeColumn + 1, i]);
+                        }
+                    }
+                }
+
+                // 제외해야 하는 숫자에 들어가야 하는 숫자가 있으면 제외
+                for (int i = 0; i < exceptNum.Count; i++)
+                {
+                    if (mustHaveNum.Contains(exceptNum[i]))
+                    {
+                        mustHaveNum.Remove(exceptNum[i]);
+                    }
+                }
+                //Console.WriteLine(mustHaveNum.Count);
+
+                _sudokuArr[changeColumn, changeRow] = rand.RandWithoutDuplicat(1, maxNum, exceptNum, ref mustHaveNum);
+                exceptNum.Add(_sudokuArr[changeColumn, changeRow]);
+
+
+                for (int i = 0; i < mustHaveNum.Count; i++)
+                {
+                    Console.Write("mustHaveNum : " + mustHaveNum[i] + "\t");
+                }
+                Console.WriteLine();
+
+                for (int i = 0; i < exceptNum.Count; i++)
+                {
+                    Console.Write(exceptNum[i] + "\t");
+                }
+                Console.WriteLine();
+                Console.WriteLine();
+
+
+                makeLineNum++;
+                startIndex++;
             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -312,5 +636,6 @@ namespace SudokuGame
                 Console.WriteLine();
             }
         }
+
     }
 }
