@@ -369,15 +369,18 @@ namespace SudokuGame
                 {
                     for (int j = 0; j < centerIndex; j++)
                     {
-                        numStack.Push(_sudokuArr[changeColumn + i, j +centerIndex]);
+                        numStack.Push(_sudokuArr[changeColumn + i, j + centerIndex]);
                     }
                 }
             }
+
 
             int num = 0;
             int count = 0;
             bool isColSame = false;
             bool isRowSame = false;
+            bool isZero = false;
+
             while (boxNum < 6)
             {
                 while (numStack.Count > 0)
@@ -414,36 +417,83 @@ namespace SudokuGame
                         }
                     }
 
-                    if (isRowSame && !isColSame)
+                    if (isRowSame)
                     {
                         changeColumn++;
                     }
 
-                    if (!isRowSame && isColSame)
+                    if (isColSame)
                     {
                         changeRow++;
                     }
 
+                    Console.WriteLine("changeColumn : " + changeColumn);
+                    Console.WriteLine("changeRow : " + changeRow);
                     if (!isRowSame && !isColSame)
                     {
-                        Console.WriteLine("changeColumn : " + changeColumn);
-                        Console.WriteLine("changeRow : " + changeRow);
                         if (_sudokuArr[changeColumn, changeRow] == 0)
                         {
+                            Console.WriteLine("num : " + num);
                             _sudokuArr[changeColumn, changeRow] = numStack.Pop();
                             count++;
-                            if(changeRow < centerIndex - 1)
+                            for (int i = 0; i < centerIndex; i++)
                             {
-                                changeRow++;
+                                if (isZero)
+                                {
+                                    isZero = false;
+                                    break;
+                                }
+                                for (int j = 0; j < centerIndex; j++)
+                                {
+                                    if (_sudokuArr[columnIndex + i, rowIndex + j] == 0)
+                                    {
+                                        changeColumn = i;
+                                        changeRow = j;
+                                        isZero = true;
+                                        break;
+                                    }
+                                }
                             }
-                            else if(changeColumn < centerIndex - 1)
+                        }
+                        else
+                        {
+                            Console.WriteLine(changeColumn);
+                            Console.WriteLine(centerIndex - 1);
+
+                            if(changeColumn == (centerIndex -1))
+                            {
+                                if(changeRow >0)
+                                {
+                                    changeRow--;
+                                }
+                                else
+                                {
+                                    changeColumn++;
+                                }
+                            }
+                            else if(changeRow == (centerIndex -1))
+                            {
+                                if (changeColumn > 0)
+                                {
+                                    changeColumn--;
+                                }
+                                else
+                                {
+                                    changeRow++;
+                                }
+                            }
+                            else if(changeColumn < (centerIndex -1))
                             {
                                 changeColumn++;
+                            }
+                            else if (changeRow < (centerIndex - 1))
+                            {
+                                changeRow++;
                             }
                         }
                     }
                 }
-                if (count < _sudokuArr.GetLength(0))
+                if (count >= _sudokuArr.GetLength(0))
                 {
                     boxNum++;
                 }
